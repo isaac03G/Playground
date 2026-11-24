@@ -1,0 +1,46 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Git and IDE metadata
+.git/
+.idea/
+.vscode/
+*.iml
+*.swp
+.DS_Store
+Thumbs.db
+
+# Java / Maven build output
+target/
+**/target/
+*.class
+*.jar
+*.war
+
+# Python virtual environments and generated files
+.venv/
+venv/
+**/.venv/
+**/venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Runtime data and logs
+logs/
+*.log
+data/
+playground-scripts/logs/
+
+# Local editor / OS artifacts
+*.bak
+*.tmp

@@ -1,0 +1,7 @@
+requests
+pymongo
+python-dotenv
+pillow
+numpy
+pandas
+scikit-learn

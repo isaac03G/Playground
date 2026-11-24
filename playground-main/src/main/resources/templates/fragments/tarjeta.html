@@ -1,0 +1,73 @@
+<!--
+  fragments/tarjeta.html — Tarjeta comparadora de un juego (dashboard).
+  Uso:  <div th:replace="~{fragments/tarjeta :: juego(${juego})}"></div>
+  Muestra: portada, precio en Steam / Epic Games / GOG (siempre las 3 filas; «—» si no está en esa tienda),
+  la tienda más barata resaltada, % de bajada de cada tienda, diferencia de precio entre tiendas y el botón Comparar.
+  Los cálculos viven en Juego.java: tiendasOrdenadas, plataformaMinima, diferenciaPrecios, porcentajeAhorro, mayorBajada.
+  Datos de la vista: monedaActual la pone MonedaAdvice; @monedas es TasaCambioService.
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+  <div th:fragment="juego(juego)" class="card card-comparador">
+    <div class="card-img">
+      <!-- Bajada reciente detectada por actualizador.py -->
+      <span class="badge-oferta" th:if="${juego.mayorBajada > 0}" th:text="'↓ ' + ${juego.mayorBajada} + '%'"></span>
+      <img loading="lazy" decoding="async"
+           th:if="${juego.imagenCatalogoUrl != null and !#strings.isEmpty(juego.imagenCatalogoUrl)}"
+           th:src="${juego.imagenCatalogoUrl}" th:alt="${juego.nombre}">
+    </div>
+    <div class="card-badge" th:if="${juego.genero != null and !#strings.isEmpty(juego.genero)}" th:text="${@mensajes.genero(juego.genero)}">Género</div>
+    <h3 th:text="${juego.nombre}">Nombre del Juego</h3>
+    <!-- Prediccion de descuento (predictor.py): % de probabilidad de bajada en 30 dias. Solo si hay prediccion guardada. -->
+    <th:block th:with="pct=${@prediccionService.porcentaje(juego.juegoId)}, prob=${@prediccionService.probable(juego.juegoId)}">
+      <div class="pred-box" th:if="${pct != null}" th:classappend="${prob} ? 'alta' : ''"
+           th:title="#{pred.titulo(${pct})}">
+        <div class="pred-fila">
+          <span class="pred-label" th:text="${prob} ? (${#locale.language == 'en' ? 'Discount likely soon' : 'Posible descuento pronto'}) : (${#locale.language == 'en' ? 'Discount unlikely' : 'Descuento poco probable'})">Posible descuento pronto</span>
+          <span class="pred-pct" th:text="${pct} + '%'">62%</span>
+        </div>
+        <div class="pred-bar"><span th:style="'width:' + ${pct} + '%'"></span></div>
+      </div>
+    </th:block>
+    <p class="card-fecha" th:if="${juego.fechaDeLanzamiento != null}">
+      <th:block th:text="#{card.lanzamiento}">Lanzamiento:</th:block>
+      <span th:text="${#temporals.format(juego.fechaDeLanzamiento, #messages.msg('fmt.fecha'))}">01/01/2020</span>
+    </p>
+
+    <!-- Una fila por tienda. «mejor» = toda tienda con el precio mínimo, pero solo si hay diferencia real
+         entre tiendas (o si es la única con precio): si todas cuestan lo mismo, ninguna se marca. -->
+    <ul class="tiendas-lista">
+      <li class="tienda-fila" th:each="t : ${juego.tiendasOrdenadas}"
+          th:with="esMejor=${t.precio != null and (juego.tiendasConPrecio == 1 or juego.diferenciaPrecios > 0) and t.precio == juego.precioMinimo}"
+          th:classappend="${t.precio == null ? 'sin-precio' : (esMejor ? 'mejor' : '')}">
+        <span class="tienda-nombre">
+          <span th:text="${t.plataforma}">Steam</span>
+          <span class="pill-mejor" th:if="${esMejor and juego.tiendasConPrecio > 1}" th:text="#{card.masBajo}">MÁS BAJO</span>
+        </span>
+        <span class="tienda-precio">
+          <span class="chip-bajada" th:if="${t.bajoDePrecio}" th:text="'↓ ' + ${t.descuento} + '%'"></span>
+          <span class="chip-pred-tienda" th:if="${@prediccionService.probableTienda(juego.juegoId, t.plataforma)}"
+                th:title="#{pred.tienda(${@prediccionService.porcentajeTienda(juego.juegoId, t.plataforma)})}"
+                th:text="${#locale.language == 'en' ? 'possible ↓' : 'posible ↓'}">posible ↓</span>
+          <span class="tienda-valor" th:text="${t.precio == null ? '—' : @monedas.formatear(t.precio, monedaActual)}">—</span>
+        </span>
+      </li>
+    </ul>
+
+    <!-- Solo si hay precio en al menos 2 tiendas -->
+    <div class="diff-precio" th:if="${juego.diferenciaPrecios > 0}">
+      <span><th:block th:text="#{card.diferencia}">Diferencia entre tiendas:</th:block> <b th:text="${@monedas.formatear(juego.diferenciaPrecios, monedaActual)}">20.000</b></span>
+      <span class="diff-pct" th:text="#{card.ahorro(${juego.porcentajeAhorro}, ${juego.plataformaMinima})}">33% más barato en GOG</span>
+    </div>
+
+    <div class="diff-precio igual" th:if="${juego.tiendasConPrecio > 1 and juego.diferenciaPrecios == 0}">
+      <span th:text="#{card.mismoPrecio}">Mismo precio en todas las tiendas</span>
+    </div>
+
+    <a th:href="@{/juegos/{id}(id=${juego.juegoId})}" class="btn btn-comparar" th:text="#{card.comparar}">Comparar</a>
+  </div>
+
+</body>
+</html>

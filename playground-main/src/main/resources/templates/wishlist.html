@@ -1,0 +1,96 @@
+<!--
+  wishlist.html — Lista de deseos del usuario autenticado
+  Modelo: juegos (List). Rutas POST para eliminar ítems.
+-->
+<!DOCTYPE html>
+<html lang="es" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+  <title th:text="#{wish.titulo}">Lista de Deseos — Playground</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <script th:src="@{/js/tema.js}"></script>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <script th:src="@{/js/app.js}" defer></script>
+  <script th:src="@{/js/wishlist.js}" defer></script>
+</head>
+<body>
+  <nav class="navbar">
+    <a th:href="@{/}" style="text-decoration:none"><h1 class="logo"><span style="color:var(--primary)">PLAY</span>GROUND</h1></a>
+    <ul class="nav-links">
+      <li><a th:href="@{/dashboard}" th:text="#{nav.tienda}">Tienda</a></li>
+      <li><a th:href="@{/buscar}" th:text="#{nav.buscar}">Buscar</a></li>
+      <li><a th:href="@{/wishlist}" style="color:var(--primary)" th:text="${#locale.language == 'en' ? '❤ Wishlist' : '❤ Lista de deseos'}">❤ Lista de deseos</a></li>
+    </ul>
+    <th:block th:replace="~{fragments/nav-acciones :: acciones}"></th:block>
+  </nav>
+
+  <div class="wishlist-wrap">
+    <main class="wishlist-main">
+      <h2 style="font-family:'Bebas Neue';font-size:2rem;margin-bottom:0.5rem" th:text="#{wish.h2}">❤ Lista de Deseos</h2>
+      <p class="wishlist-count" style="color:var(--muted);margin-bottom:1rem">
+        <span data-wish-count th:text="${juegos.size()}">0</span>
+        <span th:text="${#locale.language == 'en' ? 'saved games' : 'juegos guardados'}">juegos guardados</span>
+      </p>
+
+      <div class="vacio" data-wish-empty th:classappend="${!juegos.isEmpty()} ? ' wish-hidden' : ''">
+        <p style="font-size:3rem">❤</p>
+        <p th:text="#{wish.vacia}">Tu lista de deseos está vacía.</p>
+        <a th:href="@{/dashboard}" style="color:var(--primary)" th:text="#{wish.explorar}">Explorar tienda →</a>
+      </div>
+
+      <div class="cards wishlist-cards" data-wish-cards th:classappend="${juegos.isEmpty()} ? ' wish-hidden' : ''">
+        <div class="wish-item" th:each="juego : ${juegos}">
+          <div th:replace="~{fragments/tarjeta :: juego(${juego})}"></div>
+          <form class="wish-quitar" th:action="@{/wishlist/eliminar/{id}(id=${juego.juegoId})}" method="post">
+            <button type="submit" class="btn-wish en-lista"
+                    th:title="${#locale.language == 'en' ? 'Remove from wishlist' : 'Quitar de la lista de deseos'}"
+                    th:text="${#locale.language == 'en' ? '✕ Remove from list' : '✕ Quitar de la lista'}">✕ Quitar de la lista</button>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <aside class="wishlist-calculadora" aria-live="polite" th:attr="data-totales-url=@{/wishlist/totales}">
+      <h3 th:text="${#locale.language == 'en' ? 'Price calculator' : 'Calculadora de precios'}">Calculadora de precios</h3>
+      <p class="wishlist-calculadora-desc"
+         th:text="${#locale.language == 'en' ? 'This calculator adds up game prices to show what you would spend on each platform.' : 'Esta calculadora tomará los precios de los juegos y, dependiendo de la plataforma que elijas, es lo que gastarás.'}">
+        Esta calculadora tomará los precios de los juegos y, dependiendo de la plataforma que elijas, es lo que gastarás.
+      </p>
+      <dl>
+        <div class="calculadora-plataforma">
+          <dt>Steam</dt>
+          <dd data-total-steam th:text="${totalSteam != null ? totalSteam : '0 COP'}">0 COP</dd>
+          <ul class="juegos-plataforma" data-juegos-steam>
+            <li th:each="nombreJuego : ${juegosSteam}" th:text="${nombreJuego}"></li>
+            <li th:if="${juegosSteam == null or juegosSteam.isEmpty()}" class="sin-juegos-plataforma">Sin juegos disponibles</li>
+          </ul>
+        </div>
+        <div class="calculadora-plataforma">
+          <dt>GOG</dt>
+          <dd data-total-gog th:text="${totalGog != null ? totalGog : '0 COP'}">0 COP</dd>
+          <ul class="juegos-plataforma" data-juegos-gog>
+            <li th:each="nombreJuego : ${juegosGog}" th:text="${nombreJuego}"></li>
+            <li th:if="${juegosGog == null or juegosGog.isEmpty()}" class="sin-juegos-plataforma">Sin juegos disponibles</li>
+          </ul>
+        </div>
+        <div class="calculadora-plataforma">
+          <dt>Epic Games</dt>
+          <dd data-total-epic th:text="${totalEpic != null ? totalEpic : '0 COP'}">0 COP</dd>
+          <ul class="juegos-plataforma" data-juegos-epic>
+            <li th:each="nombreJuego : ${juegosEpic}" th:text="${nombreJuego}"></li>
+            <li th:if="${juegosEpic == null or juegosEpic.isEmpty()}" class="sin-juegos-plataforma">Sin juegos disponibles</li>
+          </ul>
+        </div>
+      </dl>
+      <p class="wishlist-calculadora-error" data-wish-error role="alert" hidden
+         th:text="#{wish.errorEliminar}">No se pudo actualizar la lista. Inténtalo de nuevo.</p>
+    </aside>
+  </div>
+
+  <footer class="footer"><p>© 2026 — <span style="color:var(--primary)">PLAYGROUND</span></p></footer>
+    <div th:replace="~{fragments/moneda :: atribucion}"></div>
+</body>
+</html>

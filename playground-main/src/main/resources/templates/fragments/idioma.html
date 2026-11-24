@@ -1,0 +1,22 @@
+<!--
+  fragments/idioma.html — Selector de idioma (ESP / ENG).
+  Uso:  <div th:replace="~{fragments/idioma :: selector}"></div>      (dentro del <nav>, junto al selector de moneda)
+  Funciona igual que el de moneda: GET /idioma?codigo=en&volver=<página actual> guarda la cookie "idioma" y vuelve.
+  El idioma actual sale de #locale (lo resuelve IdiomaLocaleResolver); los textos están en messages*.properties.
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+  <div th:fragment="selector" style="display:flex;align-items:center;margin:0">
+    <select th:title="#{idioma.titulo}"
+            th:attr="data-url=@{/idioma},aria-label=#{idioma.titulo}"
+            onchange="location.href=this.dataset.url+'?codigo='+encodeURIComponent(this.value)+'&amp;volver='+encodeURIComponent(location.pathname+location.search)"
+            style="background:var(--surface);color:var(--muted);border:1px solid var(--line-2);border-radius:6px;padding:.35rem .5rem;font:inherit;cursor:pointer">
+      <option value="es" th:selected="${#locale.language == 'es'}" th:title="#{idioma.es}">ESP</option>
+      <option value="en" th:selected="${#locale.language == 'en'}" th:title="#{idioma.en}">ENG</option>
+    </select>
+  </div>
+
+</body>
+</html>

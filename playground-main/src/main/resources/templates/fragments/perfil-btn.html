@@ -1,0 +1,19 @@
+<!--
+  fragments/perfil-btn.html — Botón redondo de la barra que lleva a /perfil.
+  Uso:  <div th:replace="~{fragments/perfil-btn :: boton}"></div>
+  Solo se ve con sesión iniciada. Muestra la foto del usuario (avatarFoto) o, si no hay, su inicial (avatarInicial);
+  ambos los pone PerfilAdvice en el modelo de todas las vistas.
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+  <a th:fragment="boton" sec:authorize="isAuthenticated()" th:href="@{/perfil}"
+     class="perfil-toggle" th:title="#{perfil.miPerfil}" th:attr="aria-label=#{perfil.miPerfil}" title="Mi perfil" aria-label="Mi perfil">
+    <span th:text="${avatarInicial ?: 'U'}">U</span>
+    <img th:if="${avatarFoto != null}" th:src="${avatarFoto}" alt=""
+         referrerpolicy="no-referrer" onerror="this.remove()">
+  </a>
+
+</body>
+</html>

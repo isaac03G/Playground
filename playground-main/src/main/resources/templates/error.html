@@ -1,0 +1,47 @@
+<!--
+  error.html — Página de error genérica (404, 500, etc.)
+  Modelo opcional: status, error, message. Valores por defecto con operador Elvis (?:).
+-->
+<!DOCTYPE html>
+<html lang="es" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+  <title th:text="#{error.titulo.pagina}">Playground — Error</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <script th:src="@{/js/tema.js}"></script>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <h1 class="logo"><span style="color:var(--primary)">PLAY</span>GROUND</h1>
+    <ul class="nav-links">
+      <li><a th:href="@{/dashboard}" th:text="#{nav.inicio}">Inicio</a></li>
+    </ul>
+    <th:block th:replace="~{fragments/nav-acciones :: acciones}"></th:block>
+  </nav>
+
+  <div class="error-page">
+    <!-- Código HTTP: th:text con operador Elvis (?:) y valor por defecto 404 -->
+    <div class="error-code" th:text="${status ?: '404'}">404</div>
+    <div class="error-badge" th:text="#{error.badge}">Estamos trabajando en ello</div>
+    <h2 class="error-title" th:text="${error != null ? @traductor.traducir(error) : #messages.msg('error.titulo')}">Algo salió mal</h2>
+    <p class="error-desc" th:text="${message != null ? @traductor.traducir(message) : #messages.msg('error.desc')}">
+      Esta sección no está disponible por el momento.
+    </p>
+    <div class="error-actions">
+      <a th:href="@{/dashboard}" class="btn" th:text="#{error.volver}">← Volver al inicio</a>
+      <a href="javascript:history.back()" class="btn-outline" th:text="#{error.anterior}">Página anterior</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2026 — <span style="color:var(--primary)">PLAYGROUND</span></p>
+  </footer>
+
+</body>
+</html>

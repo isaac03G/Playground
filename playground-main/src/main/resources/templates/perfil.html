@@ -1,0 +1,159 @@
+<!--
+  perfil.html — Gestión del perfil del usuario autenticado
+  Modelo: usuario, perfilForm, contrasenaForm, mensajeExito, mensajeError, mostrarContrasena,
+          avatarFoto / avatarInicial (los pone PerfilAdvice).
+-->
+<!DOCTYPE html>
+<html lang="es" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+  <title th:text="#{perfil.titulo}">Mi Perfil — Playground</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <script th:src="@{/js/tema.js}"></script>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <script th:src="@{/js/app.js}" defer></script>
+  <script th:src="@{/js/perfil-recorte.js}" defer></script>
+</head>
+<body class="pagina-perfil">
+  <div class="perfil-background" aria-hidden="true">
+    <img th:if="${perfilFondo != null}" th:src="${perfilFondo}" alt="">
+  </div>
+  <form th:action="@{/perfil/fondo}" method="post" enctype="multipart/form-data" class="perfil-background-form">
+    <label class="perfil-background-cambiar">
+      <span th:text="#{perfil.cambiarFondo}">Cambiar fondo</span>
+      <input type="file" name="fondo" accept="image/jpeg,image/png,image/webp,image/gif"
+             data-recorte="fondo"
+             th:attr="aria-label=#{perfil.cambiarFondoAria},data-max-bytes=5242880,data-max-message=#{perfil.fondoMax}">
+    </label>
+  </form>
+  <nav class="navbar">
+    <a th:href="@{/}" style="text-decoration:none">
+      <h1 class="logo"><span style="color:var(--primary)">PLAY</span>GROUND</h1>
+    </a>
+    <ul class="nav-links">
+      <li><a th:href="@{/dashboard}" th:text="#{nav.tienda}">Tienda</a></li>
+      <li><a th:href="@{/buscar}" th:text="#{nav.buscar}">Buscar</a></li>
+      <li sec:authorize="isAuthenticated()"><a th:href="@{/wishlist}" th:text="${#locale.language == 'en' ? '❤ Wishlist' : '❤ Lista de deseos'}">❤ Lista de deseos</a></li>
+    </ul>
+    <th:block th:replace="~{fragments/nav-acciones :: acciones}"></th:block>
+  </nav>
+
+  <div class="perfil-wrap">
+    <div class="perfil-header">
+      <!-- Al pasar el mouse por la foto aparece "Cambiar foto"; al elegir una imagen se sube sola -->
+      <form th:action="@{/perfil/foto}" method="post" enctype="multipart/form-data" class="perfil-avatar-form">
+        <div class="perfil-avatar">
+          <span th:text="${#strings.toUpperCase(#strings.substring(usuario.username, 0, 1))}">U</span>
+          <img th:if="${avatarFoto != null}" th:src="${avatarFoto}" alt=""
+               referrerpolicy="no-referrer" onerror="this.remove()">
+          <span class="perfil-avatar-cambiar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <small th:text="#{perfil.cambiarFoto}">Cambiar foto</small>
+          </span>
+          <input type="file" name="foto" accept="image/jpeg,image/png,image/webp,image/gif"
+                 th:title="#{perfil.cambiarFoto}" th:attr="aria-label=#{perfil.cambiarFotoAria},data-max-bytes=3145728,data-max-message=#{perfil.fotoMax}"
+                 data-recorte="avatar">
+        </div>
+      </form>
+      <div>
+        <h2 th:text="${usuario.username}">Usuario</h2>
+        <p class="perfil-rol" th:text="${usuario.role != null ? #strings.replace(usuario.role, 'ROLE_', '') : 'USER'}">USER</p>
+      </div>
+    </div>
+
+    <div class="alerta ok" th:if="${mensajeExito}" th:text="${@traductor.traducir(mensajeExito)}"></div>
+    <div class="alerta err" th:if="${mensajeError}" th:text="${@traductor.traducir(mensajeError)}"></div>
+
+    <div class="perfil-grid">
+      <section class="perfil-card">
+        <h3 th:text="#{perfil.datos}">Datos personales</h3>
+        <p class="perfil-desc" th:text="#{perfil.datosDesc}">Actualiza tu información de contacto.</p>
+
+        <form th:action="@{/perfil}" th:object="${perfilForm}" method="post">
+          <div class="form-group">
+            <label th:text="#{f.usuario}">Nombre de usuario</label>
+            <input type="text" th:value="${usuario.username}" disabled class="input-readonly">
+          </div>
+          <div class="form-group">
+            <label th:text="#{f.email}">Email *</label>
+            <input type="email" th:field="*{email}"
+                   th:classappend="${#fields.hasErrors('email') ? 'is-error' : ''}"
+                   required autocomplete="email">
+            <div class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+          </div>
+          <div class="form-group">
+            <label><th:block th:text="#{f.telefono}">Teléfono</th:block> <span class="opcional" th:text="#{f.opcional}">(opcional)</span></label>
+            <input type="text" th:field="*{telefono}" autocomplete="tel">
+          </div>
+          <div class="form-group">
+            <label><th:block th:text="#{f.direccion}">Dirección</th:block> <span class="opcional" th:text="#{f.opcional}">(opcional)</span></label>
+            <input type="text" th:field="*{direccion}" autocomplete="street-address">
+          </div>
+          <button type="submit" class="btn-block" th:text="#{perfil.guardar}">GUARDAR CAMBIOS</button>
+        </form>
+      </section>
+
+      <!-- Cambio de contraseña -->
+      <section class="perfil-card">
+        <h3 th:text="#{perfil.seguridad}">Seguridad</h3>
+        <p class="perfil-desc" th:text="#{perfil.seguridadDesc}">Cambia tu contraseña de acceso.</p>
+
+        <form th:action="@{/perfil/cambiar-contrasena}" th:object="${contrasenaForm}" method="post">
+          <div class="form-group">
+            <label th:text="#{f.contrasenaActual}">Contraseña actual *</label>
+            <input type="password" th:field="*{contraseniaActual}"
+                   th:classappend="${#fields.hasErrors('contraseniaActual') ? 'is-error' : ''}"
+                   required autocomplete="current-password">
+            <div class="field-error" th:if="${#fields.hasErrors('contraseniaActual')}" th:errors="*{contraseniaActual}"></div>
+          </div>
+          <div class="form-group">
+            <label th:text="#{f.contrasenaNueva}">Nueva contraseña *</label>
+            <input type="password" th:field="*{contraseniaNueva}"
+                   th:classappend="${#fields.hasErrors('contraseniaNueva') ? 'is-error' : ''}"
+                   required autocomplete="new-password">
+            <div class="field-error" th:if="${#fields.hasErrors('contraseniaNueva')}" th:errors="*{contraseniaNueva}"></div>
+          </div>
+          <div class="form-group">
+            <label th:text="#{f.confirmarNueva}">Confirmar nueva contraseña *</label>
+            <input type="password" th:field="*{confirmarContrasenia}"
+                   th:classappend="${#fields.hasErrors('confirmarContrasenia') ? 'is-error' : ''}"
+                   required autocomplete="new-password">
+            <div class="field-error" th:if="${#fields.hasErrors('confirmarContrasenia')}" th:errors="*{confirmarContrasenia}"></div>
+          </div>
+          <button type="submit" class="btn-block btn-outline" th:text="#{perfil.cambiarContrasena}">CAMBIAR CONTRASEÑA</button>
+        </form>
+      </section>
+    </div>
+
+    <form th:action="@{/logout}" method="post" class="perfil-salir">
+      <button type="submit" class="btn small" style="background:transparent;border:1px solid var(--primary);color:var(--primary)" th:text="#{perfil.salir}">Salir</button>
+    </form>
+  </div>
+
+  <footer class="footer">
+    <p>© 2026 — <span style="color:var(--primary)">PLAYGROUND</span></p>
+  </footer>
+
+  <dialog class="perfil-recorte" id="perfil-recorte"
+          th:attr="data-titulo-avatar=#{perfil.recorteFoto},data-titulo-fondo=#{perfil.recorteFondo},data-ayuda=#{perfil.recorteAyuda},data-cancelar=#{perfil.recorteCancelar},data-confirmar=#{perfil.recorteConfirmar},data-error=#{perfil.recorteError}">
+    <div class="perfil-recorte-contenido">
+      <h2 id="perfil-recorte-titulo"></h2>
+      <div class="perfil-recorte-ventana" id="perfil-recorte-ventana">
+        <img id="perfil-recorte-imagen" alt="" draggable="false">
+      </div>
+      <p class="perfil-recorte-ayuda" id="perfil-recorte-ayuda"></p>
+      <label class="perfil-recorte-zoom">
+        <span th:text="#{perfil.recorteZoom}">Zoom</span>
+        <input id="perfil-recorte-zoom" type="range" min="1" max="3" step="0.01" value="1">
+      </label>
+      <div class="perfil-recorte-acciones">
+        <button type="button" class="btn btn-outline" id="perfil-recorte-cancelar"></button>
+        <button type="button" class="btn" id="perfil-recorte-confirmar"></button>
+      </div>
+    </div>
+  </dialog>
+</body>
+</html>

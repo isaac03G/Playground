@@ -1,0 +1,374 @@
+# Más juegos conocidos. Un nombre por línea; las líneas con # se ignoran.
+# Formato opcional: categoria|Nombre   (la categoría solo se muestra en pantalla)
+
+# ---- Acción / aventura ----
+Grand Theft Auto IV
+Grand Theft Auto: San Andreas
+Max Payne 3
+Mafia: Definitive Edition
+Mafia III
+Assassin's Creed Mirage
+Assassin's Creed Origins
+Assassin's Creed Syndicate
+Assassin's Creed Unity
+Assassin's Creed Black Flag
+Assassin's Creed Shadows
+Watch Dogs: Legion
+Ghost Recon Breakpoint
+Shadow of the Tomb Raider
+Marvel's Guardians of the Galaxy
+Marvel's Midnight Suns
+Batman: Arkham City
+Batman: Arkham Asylum
+Star Wars Jedi: Fallen Order
+Star Wars Battlefront II
+LEGO Star Wars: The Skywalker Saga
+Hitman 3
+Hitman: World of Assassination
+Dishonored 2
+Prey
+Deathloop
+Ghostwire: Tokyo
+Sifu
+Bayonetta
+Metal Gear Rising: Revengeance
+Darksiders III
+Nioh 2
+Lies of P
+Wo Long: Fallen Dynasty
+Black Myth: Wukong
+Stellar Blade
+Ratchet & Clank: Rift Apart
+Returnal
+Sackboy: A Big Adventure
+Horizon Zero Dawn Remastered
+Dragon Ball Z: Kakarot
+Naruto Shippuden: Ultimate Ninja Storm 4
+One Piece Odyssey
+Resident Evil 3
+Resident Evil Requiem
+Devil May Cry 5 Special Edition
+Shadow Warrior 3
+Dying Light: The Beast
+Just Cause 3
+Red Faction Guerrilla Re-Mars-tered
+Crysis Remastered
+Mirror's Edge Catalyst
+Sleeping Dogs: Definitive Edition
+Remnant II
+Remnant: From the Ashes
+Vampire: The Masquerade - Bloodlines 2
+Evil West
+Hogwarts Legacy
+The Callisto Protocol
+Atomic Heart
+Warhammer 40,000: Space Marine 2
+
+# ---- RPG ----
+The Witcher 2: Assassins of Kings
+The Witcher: Enhanced Edition
+Mass Effect 2
+Mass Effect: Andromeda
+Dragon Age: Origins
+Dragon Age: The Veilguard
+Fallout 3
+Fallout 76
+The Outer Worlds
+Avowed
+Starfield
+Kingdom Come: Deliverance II
+Pathfinder: Wrath of the Righteous
+Pathfinder: Kingmaker
+Wasteland 3
+Tyranny
+Baldur's Gate: Enhanced Edition
+Neverwinter Nights: Enhanced Edition
+Divinity: Original Sin - Enhanced Edition
+Final Fantasy VII Rebirth
+Final Fantasy X/X-2 HD Remaster
+Final Fantasy XVI
+Final Fantasy XIV Online
+Persona 3 Reload
+Persona 4 Golden
+Persona 5 Tactical
+Metaphor: ReFantazio
+Tales of Arise
+Tales of Berseria
+Ni no Kuni Wrath of the White Witch Remastered
+Dragon Quest XI S
+Dragon's Dogma 2
+Monster Hunter Wilds
+Monster Hunter Rise
+Elder Scrolls Online
+The Elder Scrolls III: Morrowind
+Dark Souls II: Scholar of the First Sin
+Dark Souls Remastered
+Code Vein
+The Surge 2
+Greedfall
+Gothic Remake
+ELEX II
+Outward
+Chrono Trigger
+Chained Echoes
+Sea of Stars
+Clair Obscur: Expedition 33
+Diablo II: Resurrected
+Grim Dawn
+Last Epoch
+Torchlight Infinite
+Titan Quest Anniversary Edition
+Lost Ark
+
+# ---- Shooters ----
+Call of Duty: Black Ops 6
+Call of Duty: Black Ops Cold War
+Call of Duty: Modern Warfare II
+Call of Duty: Warzone
+Battlefield V
+Battlefield 4
+Battlefield 6
+Counter-Strike: Global Offensive
+Halo Infinite
+Halo: Combat Evolved Anniversary
+Gears 5
+Gears of War: Ultimate Edition
+Quake Champions
+Quake
+DOOM: The Dark Ages
+Wolfenstein: The New Order
+Wolfenstein: Youngblood
+Borderlands: The Pre-Sequel
+Borderlands: Game of the Year Edition
+Tiny Tina's Wonderlands
+Far Cry 4
+Far Cry Primal
+Far Cry New Dawn
+Escape from Tarkov
+Insurgency: Sandstorm
+Ready or Not
+Squad
+Hunt: Showdown 1896
+The Finals
+Splitgate
+Superhot
+Ultrakill
+Boomer shooter|Dusk
+Prodeus
+Metro 2033 Redux
+Metro: Last Light Redux
+S.T.A.L.K.E.R.: Shadow of Chernobyl
+S.T.A.L.K.E.R. 2: Heart of Chornobyl
+Stalker: Call of Pripyat
+Bioshock Remastered
+BioShock 2 Remastered
+Killing Floor 2
+Left 4 Dead
+Black Mesa
+Half-Life
+Half-Life 2: Episode Two
+Portal Reloaded
+Titanfall
+Warhammer 40,000: Darktide
+Warhammer: Vermintide 2
+
+# ---- Estrategia / simulación ----
+Civilization V
+Civilization VII
+Age of Empires III: Definitive Edition
+Age of Mythology: Retold
+Age of Empires II
+Total War: Rome II
+Total War: Three Kingdoms
+Total War: Medieval II
+Total War: WARHAMMER II
+Command & Conquer Remastered Collection
+Command & Conquer: Red Alert 3
+Warhammer 40,000: Dawn of War - Definitive Edition
+Warhammer 40,000: Gladius - Relics of War
+Company of Heroes 2
+Men of War II
+Hearts of Iron IV
+Victoria 3
+Stellaris
+Imperator: Rome
+Sins of a Solar Empire II
+Endless Legend
+Endless Space 2
+Battle Brothers
+XCOM: Enemy Unknown
+XCOM Chimera Squad
+Mechanicus
+Phoenix Point
+Gears Tactics
+Desperados III
+Shadow Tactics: Blades of the Shogun
+Commandos 3
+Dungeons 3
+Cities: Skylines
+SimCity 4
+Transport Fever 2
+Train Sim World 4
+Railway Empire 2
+Tropico 6
+Anno 2205
+The Settlers: New Allies
+Banished
+Dwarf Fortress
+Farthest Frontier
+Manor Lords
+Against the Storm
+Bloons TD 6
+Kingdom Rush Vengeance
+Planet Zoo
+Jurassic World Evolution 2
+Football Manager 2025
+Motorsport Manager
+Euro Truck Simulator
+Microsoft Flight Simulator 2024
+X-Plane 12
+Digital Combat Simulator World
+War Thunder
+World of Tanks
+Elite Dangerous
+Star Citizen
+Space Engineers
+Kerbal Space Program 2
+Hardspace: Shipbreaker
+
+# ---- Carreras / deportes ----
+Need for Speed: Hot Pursuit Remastered
+Need for Speed Most Wanted
+Need for Speed Payback
+The Crew Motorfest
+Forza Motorsport
+Forza Horizon 3
+Grid Legends
+DiRT 5
+EA SPORTS WRC
+F1 23
+F1 Manager 2024
+MotoGP 24
+Ride 5
+Test Drive Unlimited Solar Crown
+Wreckfest 2
+Rocket League
+Session: Skate Sim
+Skate.
+EA SPORTS FC 25
+EA SPORTS FC 26
+EA SPORTS College Football 25
+NBA 2K25
+NBA 2K26
+Madden NFL 25
+NHL 24
+WWE 2K25
+UFC 5
+PES 2021
+Pro Evolution Soccer 2019
+Football Manager 2024
+Brawlhalla
+Rematch
+Steep
+Riders Republic
+
+# ---- Terror / supervivencia ----
+Resident Evil 5
+Resident Evil 6
+Resident Evil Revelations 2
+Silent Hill f
+Silent Hill: The Short Message
+Dead Space Remake
+Alan Wake Remastered
+Alan Wake II
+Amnesia: The Dark Descent
+Amnesia: Rebirth
+SOMA
+Outlast 2
+The Outlast Trials
+Layers of Fear 2023
+The Medium
+Observer: System Redux
+Blair Witch
+Man of Medan
+The Quarry
+Dark Pictures Anthology: House of Ashes
+Little Hope
+Alien: Rogue Incursion
+Friday the 13th: The Game
+Texas Chainsaw
+Devour
+Content Warning
+Pacific Drive
+Sons of the Forest
+Green Hell
+The Long Dark
+Project Zomboid
+7 Days to Die
+DayZ
+State of Decay 2
+Raft
+Don't Starve Together
+Subnautica: Below Zero
+Palworld
+Enshrouded
+Nightingale
+Smalland: Survive the Wilds
+Core Keeper
+V Rising
+Conan Exiles
+Ark: Survival Ascended
+
+# ---- Indie / plataformas / puzles ----
+Hollow Knight
+Blasphemous
+Blasphemous 2
+Ori: The Collection
+Rayman Origins
+Crash Bandicoot 4: It's About Time
+Spyro Reignited
+Sonic Frontiers
+Sonic x Shadow Generations
+Sonic Origins
+Little Nightmares III
+Hollow Knight: Silksong
+Cocoon
+Tunic
+Death's Door
+Dead Cells: Return to Castlevania
+Slay the Spire 2
+Monster Train
+Inscryption
+Loop Hero
+Stardew Valley
+Coral Island
+Cozy Grove
+Dredge
+Cult of the Lamb
+Pizza Tower
+Hi-Fi Rush
+Kingdom Two Crowns
+Terraria
+Don't Starve
+Factorio
+Rimworld
+Cuphead: The Delicious Last Course
+Hades
+Gunfire Reborn
+Enter the Gungeon
+Noita
+Spelunky 2
+Papers Please
+Disco Elysium: The Final Cut
+Danganronpa: Trigger Happy Havoc
+Ace Attorney Trilogy
+Professor Layton
+Escape Simulator
+It Takes Two
+A Way Out
+Split Fiction
+Unravel Two
+Overcooked! All You Can Eat
+Moving Out 2
+LEGO Harry Potter Collection
+LEGO Marvel's Avengers

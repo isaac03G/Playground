@@ -1,0 +1,214 @@
+<!--
+  juego-detalle.html — Ficha de un juego con precios por tienda y wishlist
+  Modelo: juego, enWishlist, juegosRelacionados, mensaje, error.
+-->
+<!DOCTYPE html>
+<!-- xmlns:sec — visibilidad de login/logout y enlaces según rol -->
+<html lang="es" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+  <!-- Título dinámico con el nombre del juego -->
+  <title th:text="${juego.nombre} + ' — Playground'">Juego</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <script th:src="@{/js/tema.js}"></script>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <script th:src="@{/js/app.js}" defer></script>
+  <script th:src="@{/js/historial-precios.js}" defer></script>
+</head>
+<body>
+  <th:block th:with="bannerFondo=${bannerUrl ?: (juego.imagenUrl ?: juego.imagenNormalizadaUrl)}, bannerFallback=${bannerUrl != null ? (juego.imagenUrl ?: juego.imagenNormalizadaUrl) : ''}">
+    <div class="detalle-backdrop" th:if="${bannerFondo != null and !#strings.isEmpty(bannerFondo)}" aria-hidden="true">
+      <img th:src="${bannerFondo}" th:attr="data-fallback=${bannerFallback}" alt=""
+           onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}else{this.closest('.detalle-backdrop').remove();}">
+    </div>
+  </th:block>
+
+  <nav class="navbar">
+    <a th:href="@{/}" style="text-decoration:none">
+      <h1 class="logo"><span style="color:var(--primary)">PLAY</span>GROUND</h1>
+    </a>
+    <ul class="nav-links">
+      <li><a th:href="@{/dashboard}" th:text="#{nav.tienda}">Tienda</a></li>
+      <li><a th:href="@{/buscar}" th:text="#{nav.buscar}">Buscar</a></li>
+      <li sec:authorize="isAuthenticated()"><a th:href="@{/wishlist}" th:text="${#locale.language == 'en' ? '❤ Wishlist' : '❤ Lista de deseos'}">❤ Lista de deseos</a></li>
+    </ul>
+    <th:block th:replace="~{fragments/nav-acciones :: acciones}"></th:block>
+  </nav>
+
+  <!-- Migas de pan: enlaces a tienda y filtro por género -->
+  <div class="breadcrumb">
+    <a th:href="@{/dashboard}" th:text="#{nav.tienda}">Tienda</a> ›
+    <a th:if="${juego.genero != null}" th:href="@{/buscar(genero=${juego.genero})}" th:text="${@mensajes.genero(juego.genero)}">Género</a>
+    <span th:if="${juego.genero == null}" th:text="#{det.sinGenero}">Sin género</span> ›
+    <span th:text="${juego.nombre}">Juego</span>
+  </div>
+
+  <!-- Mensajes flash: th:if + th:text desde atributos mensaje / error -->
+  <div th:if="${mensaje}" class="alerta ok" th:text="${@traductor.traducir(mensaje)}"></div>
+  <div th:if="${error}"   class="alerta err" th:text="${@traductor.traducir(error)}"></div>
+
+  <!-- Detalle principal -->
+  <div class="detalle-hero">
+
+    <!-- Portada -->
+    <!-- Misma portada 3:4 que la tarjeta del catálogo; si el juego aún no la tiene, se muestra la original sin recortar -->
+    <div class="detalle-cover"
+         th:classappend="${juego.imagenNormalizadaUrl != null and !#strings.isEmpty(juego.imagenNormalizadaUrl)} ? 'vertical'">
+      <img th:if="${juego.imagenCatalogoUrl != null and !#strings.isEmpty(juego.imagenCatalogoUrl)}"
+           th:src="${juego.imagenCatalogoUrl}" th:alt="${juego.nombre}">
+      <!-- th:unless muestra placeholder si no hay URL de imagen -->
+      <div class="detalle-cover-placeholder"
+           th:unless="${juego.imagenCatalogoUrl != null and !#strings.isEmpty(juego.imagenCatalogoUrl)}">
+        <span th:text="${juego.nombre != null ? juego.nombre.substring(0,1).toUpperCase() : '?'}">?</span>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="detalle-info">
+
+      <div class="detalle-badges">
+        <span class="badge badge-genero" th:text="${juego.genero != null ? @mensajes.genero(juego.genero) : 'N/A'}">Género</span>
+        <span class="chip-prediccion" th:if="${@prediccionService.probable(juego.juegoId)}"
+              th:title="#{pred.titulo(${@prediccionService.porcentaje(juego.juegoId)})}"
+              th:text="${#locale.language == 'en' ? 'Discount likely soon' : 'Posible descuento pronto'}">Posible descuento pronto</span>
+      </div>
+
+      <h1 class="detalle-nombre" th:text="${juego.nombre}">Nombre del Juego</h1>
+      <p class="detalle-desc"
+         th:text="${juego.descripcion != null and !#strings.isEmpty(juego.descripcion) ? @traductor.traducir(juego.descripcion) : #messages.msg('det.sinDescripcion')}">Descripción</p>
+
+      <div class="detalle-meta">
+        <div class="meta-item">
+          <label th:text="#{det.desarrolladora}">Desarrolladora</label>
+          <span th:text="${juego.desarrolladora ?: 'N/A'}">Dev</span>
+        </div>
+        <div class="meta-item">
+          <label th:text="#{det.lanzamiento}">Lanzamiento</label>
+          <span th:text="${juego.fechaDeLanzamiento != null ? #temporals.format(juego.fechaDeLanzamiento, #messages.msg('fmt.fecha')) : 'N/A'}">2024</span>
+        </div>
+      </div>
+
+      <!-- Panel de precios por plataforma -->
+      <div class="precios-panel">
+        <h3 th:text="#{det.preciosPorTienda}">💰 Precios por tienda</h3>
+
+        <div th:if="${juego.precios != null and !juego.precios.isEmpty()}">
+          <!-- Cada tienda es un enlace: lleva a la página del juego en esa tienda (se abre en otra pestaña) -->
+          <a class="precio-plataforma precio-enlace" th:each="entrada : ${juego.precios}"
+             th:href="${entrada.urlTienda(juego.nombre)}" target="_blank" rel="noopener noreferrer"
+             th:attr="title=#{det.irTienda(${entrada.plataforma})},aria-label=#{det.irTienda(${entrada.plataforma})}">
+            <div class="plat-nombre">
+              <!-- Iconos por plataforma -->
+              <span class="plat-icono" aria-hidden="true">
+                <img th:if="${entrada.plataforma == 'Steam'}" th:src="@{/images/stores/steam.png}" alt="">
+                <img th:if="${entrada.plataforma == 'Epic Games'}" th:src="@{/images/stores/epic-games.png}" alt="">
+                <img th:if="${entrada.plataforma == 'GOG'}" th:src="@{/images/stores/gog.png}" alt="">
+                <span th:unless="${entrada.plataforma == 'Steam' or entrada.plataforma == 'Epic Games' or entrada.plataforma == 'GOG'}"
+                      th:text="${'🏪'}">🏪</span>
+              </span>
+              <span th:text="${entrada.plataforma}">Steam</span>
+              <span class="mejor-badge"
+                    th:if="${juego.plataformaMinima != null and juego.plataformaMinima == entrada.plataforma}">
+                <th:block th:text="#{det.mejorPrecio}">MEJOR PRECIO</th:block>
+              </span>
+            </div>
+            <div class="plat-derecha">
+              <div class="plat-linea">
+                <!-- Bajada reciente detectada por actualizador.py -->
+                <span class="chip-bajada" th:if="${entrada.bajoDePrecio}" th:text="'↓ ' + ${entrada.descuento} + '%'"></span>
+                <s class="precio-anterior" th:if="${entrada.bajoDePrecio and entrada.precioAnterior != null}"
+                   th:text="${@monedas.formatear(entrada.precioAnterior, monedaActual)}"></s>
+                <span class="plat-precio"
+                      th:classappend="${juego.plataformaMinima != null and juego.plataformaMinima == entrada.plataforma ? 'mejor' : ''}"
+                      th:text="${@monedas.formatear(entrada.precio, monedaActual)}"
+                      th:title="${entrada.precioOriginal != null ? 'Precio en la tienda: ' + entrada.precioOriginal + ' ' + entrada.monedaOriginal : null}"></span>
+              </div>
+              <time class="verificado rel-time" th:if="${entrada.ultimaRevision != null}"
+                    th:attr="data-prefijo=#{det.verificado},datetime=${entrada.ultimaRevision}"
+                    th:text="#{det.verificado} + ' ' + ${entrada.ultimaRevision}"></time>
+            </div>
+          </a>
+        </div>
+
+        <p class="sin-precios" th:if="${juego.precios == null or juego.precios.isEmpty()}">
+          <th:block th:text="#{det.sinPrecios}">No hay precios disponibles por el momento.</th:block>
+        </p>
+
+        <!-- Wishlist: formularios POST según si el juego ya está en la lista (enWishlist) -->
+        <th:block sec:authorize="isAuthenticated()">
+          <form th:if="${enWishlist != null and !enWishlist}"
+                th:action="@{/wishlist/agregar/{id}(id=${juego.juegoId})}" method="post">
+            <button type="submit" class="btn-wish" th:text="${#locale.language == 'en' ? '❤ Add to wishlist' : '❤ Añadir a lista de deseos'}">❤ Añadir a lista de deseos</button>
+          </form>
+          <form th:if="${enWishlist != null and enWishlist}"
+                th:action="@{/wishlist/eliminar/{id}(id=${juego.juegoId})}" method="post">
+            <button type="submit" class="btn-wish en-lista" th:text="${#locale.language == 'en' ? '❤ In your wishlist' : '❤ En tu lista de deseos'}">❤ En tu lista de deseos</button>
+          </form>
+        </th:block>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historial de precios: últimos 12 meses (datos de precios_historial, dibujados por historial-precios.js) -->
+  <section class="historial-section" id="historial-precios"
+           th:attr="data-json=${historialJson},data-moneda=${monedaActual},data-factor=${@monedas.convertirDesdeCop(1.0, monedaActual)},data-lang=${#locale.language},
+                    data-t-bajo=#{hist.bajo},data-t-subio=#{hist.subio},data-t-base=#{hist.base},data-t-hoy=#{hist.hoy},
+                    data-t-gratis=#{hist.gratis},data-t-desde=#{hist.desde}">
+    <h3 class="historial-titulo" th:text="#{hist.titulo}">📈 Historial de precios · últimos 12 meses</h3>
+
+    <p class="sin-precios" th:if="${historial == null or historial.vacio()}" th:text="#{hist.vacio}">
+      Aún no hay cambios de precio registrados para este juego.
+    </p>
+
+    <div th:unless="${historial == null or historial.vacio()}">
+      <div class="hist-stats">
+        <div class="hist-stat"><span class="hist-stat-label" th:text="#{hist.minimo}">Precio más bajo</span><strong data-stat="min">—</strong><small data-stat="min-sub"></small></div>
+        <div class="hist-stat"><span class="hist-stat-label" th:text="#{hist.maximo}">Precio más alto</span><strong data-stat="max">—</strong><small data-stat="max-sub"></small></div>
+        <div class="hist-stat bajada"><span class="hist-stat-label" th:text="#{hist.bajadas}">Bajadas</span><strong th:text="${historial.bajadas()}">0</strong><small th:if="${historial.mayorBajadaPct() != null}" th:text="#{hist.mayorBajada(${historial.mayorBajadaPct()})}">mayor: 40%</small></div>
+        <div class="hist-stat subida"><span class="hist-stat-label" th:text="#{hist.subidas}">Subidas</span><strong th:text="${historial.subidas()}">0</strong></div>
+      </div>
+
+      <div class="hist-leyenda" data-leyenda></div>
+      <div class="hist-grafica" data-grafica>
+        <div class="hist-tooltip" data-tooltip hidden></div>
+      </div>
+      <p class="hist-nota" th:text="#{hist.nota}">Cada punto verde es una bajada y cada punto rojo una subida de precio.</p>
+    </div>
+  </section>
+
+  <!-- Juegos relacionados -->
+  <div class="relacionados-section"
+       th:if="${juegosRelacionados != null and !juegosRelacionados.isEmpty()}">
+    <h3 style="font-family:'Bebas Neue';font-size:1.5rem;margin-bottom:1rem;border-bottom:1px solid var(--line);padding-bottom:0.75rem">
+      <th:block th:text="#{det.tambienGustar}">También te puede gustar</th:block>
+    </h3>
+    <div class="cards">
+      <div class="card" th:each="rel : ${juegosRelacionados}"
+           th:if="${rel.juegoId != juego.juegoId}">
+        <div class="card-img">
+          <span class="badge-oferta" th:if="${rel.mayorBajada > 0}" th:text="'↓ ' + ${rel.mayorBajada} + '%'"></span>
+          <img loading="lazy" decoding="async"
+               th:if="${rel.imagenCatalogoUrl != null and !#strings.isEmpty(rel.imagenCatalogoUrl)}"
+               th:src="${rel.imagenCatalogoUrl}" th:alt="${rel.nombre}">
+        </div>
+        <div class="card-badge" th:text="${@mensajes.genero(rel.genero)}">Género</div>
+        <h3 th:text="${rel.nombre}">Nombre</h3>
+        <div class="card-footer">
+          <span class="precio"
+                th:text="${rel.precioMinimo > 0 ? #messages.msg('wish.desde', @monedas.formatear(rel.precioMinimo, monedaActual)) : #messages.msg('wish.verPrecios')}">
+          </span>
+          <a th:href="@{/juegos/{id}(id=${rel.juegoId})}" class="btn small" th:text="#{det.ver}">Ver</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2026 — <span style="color:var(--primary)">PLAYGROUND</span></p>
+  </footer>
+    <div th:replace="~{fragments/moneda :: atribucion}"></div>
+</body>
+</html>

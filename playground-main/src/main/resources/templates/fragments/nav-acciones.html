@@ -1,0 +1,64 @@
+<!--
+  fragments/nav-acciones.html — Controles de la derecha de la barra, iguales en todas las páginas:
+  moneda, idioma, enlace Admin (solo para administradores), "Iniciar sesión" y perfil.
+  Uso:  <th:block th:replace="~{fragments/nav-acciones :: acciones}"></th:block>      (dentro del <nav>, después de .nav-links)
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+  <th:block th:fragment="acciones">
+    <th:block th:replace="~{fragments/nav-acciones :: menu-lateral}"></th:block>
+    <div class="nav-actions">
+      <div th:replace="~{fragments/moneda :: selector}"></div>
+      <div th:replace="~{fragments/idioma :: selector}"></div>
+      <a th:replace="~{fragments/nav-acciones :: admin}"></a>
+      <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn small" th:text="#{nav.login}">Iniciar sesión</a>
+      <div th:replace="~{fragments/perfil-btn :: boton}"></div>
+    </div>
+  </th:block>
+  <th:block th:fragment="menu-lateral">
+    <button class="site-menu-toggle" type="button" aria-controls="site-sidebar" aria-expanded="false"
+            th:attr="aria-label=#{nav.menu}" th:title="#{nav.menu}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <aside class="site-sidebar" id="site-sidebar" inert aria-hidden="true" th:attr="aria-label=#{nav.menu}">
+      <nav class="site-sidebar-nav">
+        <a class="site-sidebar-link" th:href="@{/dashboard}">
+          <span class="site-sidebar-icon" aria-hidden="true">⌂</span>
+          <span th:text="#{nav.inicio}">Inicio</span>
+        </a>
+        <a class="site-sidebar-link" th:href="@{/buscar}">
+          <span class="site-sidebar-icon" aria-hidden="true">⌕</span>
+          <span th:text="#{nav.buscar}">Buscar</span>
+        </a>
+        <div class="site-sidebar-divider"></div>
+        <h2 class="site-sidebar-heading" th:text="#{nav.generos}">Géneros</h2>
+        <a class="site-sidebar-link" th:href="@{/dashboard#accion}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m14 4 6 6M17 3l4 4-9 9-4-4zM7 13l4 4m-7 3 6-6"/></svg></span><span th:text="#{genero.accion}">Acción</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Aventura|Adventure')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15.8 8.2-2.5 5.1-5.1 2.5 2.5-5.1z"/></svg></span><span th:text="#{genero.aventura}">Aventura</span></a>
+        <a class="site-sidebar-link" th:href="@{/dashboard#rpg}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/><path d="M8 8h.01M15 15h.01"/></svg></span><span th:text="#{genero.rpg}">RPG</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Rol|Role-playing')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="3"/><path d="M6 21v-2a6 6 0 0 1 12 0v2zM9 13l3 3 3-3"/></svg></span><span th:text="#{genero.rol}">Rol</span></a>
+        <a class="site-sidebar-link" th:href="@{/dashboard#shooter}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg></span><span th:text="#{genero.shooter}">Shooter</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Estrategia|Strategy')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 21V8h3V5h2V3h4v2h2v3h3v13zM3 21h18M9 12v2m6-2v2"/></svg></span><span th:text="#{genero.estrategia}">Estrategia</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Deportes|Sports')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m12 7 3 2-1 4h-4L9 9zm-3 2-3-1m11 1 3-1m-9 5-2 4m5-4 2 4"/></svg></span><span th:text="#{genero.deportes}">Deportes</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Simulación|Simulation')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.5 2.6-1.7-.7a8 8 0 0 1-1.7 1l-.3 1.9h-3l-.3-1.9a8 8 0 0 1-1.7-1l-1.7.7-1.5-2.6 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1L7 9.3l1.7.7a8 8 0 0 1 1.7-1l.3-1.9h3l.3 1.9a8 8 0 0 1 1.7 1l1.7-.7 1.5 2.6-1.4 1.1a7 7 0 0 1-.1 2z"/></svg></span><span th:text="#{genero.simulacion}">Simulación</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Carreras|Racing')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 16 2-6h10l2 6v3h-2v-2H7v2H5zM7 10l2-4h6l2 4M8 13h.01M16 13h.01M3 13h2m14 0h2"/></svg></span><span th:text="#{genero.carreras}">Carreras</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Indie')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg></span><span th:text="#{genero.indie}">Indie</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Casual')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg></span><span th:text="#{genero.casual}">Casual</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Plataformas|Platformer')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 18h5m2 0h4m2 0h5M7 15l2-4 2 2 2-5 3 7"/></svg></span><span th:text="#{genero.plataformas}">Plataformas</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Terror|Horror')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3a8 8 0 0 0-8 8v4a2 2 0 0 0 2 2h2v-5H6a6 6 0 0 1 12 0h-2v5h2a2 2 0 0 0 2-2v-4a8 8 0 0 0-8-8zM9 13h.01M15 13h.01M10 17h4"/></svg></span><span th:text="#{genero.terror}">Terror</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Lucha|Fighting')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 11V6a2 2 0 0 1 4 0v3-4a2 2 0 0 1 4 0v4a2 2 0 0 1 4 0v6a7 7 0 0 1-7 7h-1a6 6 0 0 1-5-3l-3-4a2 2 0 0 1 3-3l2 2"/></svg></span><span th:text="#{genero.lucha}">Lucha</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Puzles|Puzzle')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h6v3a2 2 0 1 0 4 0V4h6v6h-3a2 2 0 1 0 0 4h3v6h-6v-3a2 2 0 1 0-4 0v3H4v-6h3a2 2 0 1 0 0-4H4z"/></svg></span><span th:text="#{genero.puzles}">Puzles</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Supervivencia|Survival')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 20 9-15 9 15zM12 5v15m-4-6h8"/></svg></span><span th:text="#{genero.supervivencia}">Supervivencia</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Mundo abierto|Open world')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span><span th:text="#{genero.mundo_abierto}">Mundo abierto</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Multijugador masivo|Massively multiplayer')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20v-2a6 6 0 0 1 12 0v2zm13-6a5 5 0 0 1 5 5v1h-4"/></svg></span><span th:text="#{genero.multijugador_masivo}">Multijugador masivo</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Gratuito para jugar|Free to Play')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 8.5c-.7-.7-1.7-1-3-1-1.7 0-3 .9-3 2.2 0 3.2 6 1.3 6 4.5 0 1.3-1.3 2.3-3 2.3-1.3 0-2.4-.4-3.2-1.2M12 5v14"/></svg></span><span th:text="#{genero.gratuito_para_jugar}">Gratuito para jugar</span></a>
+        <a class="site-sidebar-link" th:href="@{/buscar(genero='Acceso anticipado|Early Access')}"><span class="site-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span th:text="#{genero.acceso_anticipado}">Acceso anticipado</span></a>
+      </nav>
+    </aside>
+    <script th:src="@{/js/menu-lateral.js}" defer></script>
+  </th:block>
+  <a th:fragment="admin" sec:authorize="hasRole('ADMIN')" th:href="@{/admin}" class="btn small">Admin</a>
+
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!--
+  dashboard.html — Página principal / catálogo de juegos
+  Modelo: juegos (Page), juegosAccion, juegosRPG, juegosShooter.
+  Requiere Spring Security para sec:authorize en la barra de navegación.
+-->
+<!DOCTYPE html>
+<!-- xmlns:th — Thymeleaf | xmlns:sec — Spring Security (visibilidad por rol/sesión) -->
+<html lang="es" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+  <title th:text="#{dash.titulo}">Playground — Compara precios de videojuegos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <script th:src="@{/js/tema.js}"></script>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+  <!-- Navegación global: enlaces públicos y condicionales por autenticación/rol -->
+  <nav class="navbar">
+    <h1 class="logo"><span style="color:var(--primary)">PLAY</span>GROUND</h1>
+    <ul class="nav-links">
+      <li><a href="#todos" th:text="#{nav.inicio}">Inicio</a></li>
+      <li><a th:href="@{/buscar}" th:text="#{nav.buscar}">Buscar</a></li>
+      <!-- sec:authorize="isAuthenticated()" — solo usuarios con sesión activa -->
+      <li sec:authorize="isAuthenticated()"><a th:href="@{/wishlist}" th:text="${#locale.language == 'en' ? '❤ Wishlist' : '❤ Lista de deseos'}">❤ Lista de deseos</a></li>
+    </ul>
+    <th:block th:replace="~{fragments/nav-acciones :: acciones}"></th:block>
+  </nav>
+
+  <!-- Sección hero: presentación y CTAs al catálogo y buscador -->
+  <section class="hero">
+    <div class="hero-content">
+      <p class="hero-eyebrow" th:text="#{dash.eyebrow}">Compara precios de videojuegos</p>
+      <h2><th:block th:text="#{hero.linea1}">ENCUENTRA EL</th:block><br><span class="grad-text" th:text="#{hero.linea2}">MEJOR PRECIO</span></h2>
+      <p><span class="hl">Steam</span> · <span class="hl">Epic Games</span> · <span class="hl">GOG</span> <th:block th:text="#{hero.todoEnUno}">— todo en un solo lugar.</th:block></p>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <a href="#todos" class="btn" th:text="#{hero.verCatalogo}">Ver Catálogo</a>
+        <a th:href="@{/buscar}" class="btn" style="background:transparent;border:1px solid var(--primary);color:var(--primary)" th:text="#{hero.buscarJuego}">🔍 Buscar juego</a>
+      </div>
+      <!-- Cifras de la portada: app.js las anima contando desde 0 -->
+      <div class="hero-stats">
+        <div class="hero-stat"><b th:attr="data-count=${juegos.totalElements}" th:text="${juegos.totalElements}">0</b><span th:text="#{stat.juegos}">Juegos</span></div>
+        <div class="hero-stat"><b data-count="3">3</b><span th:text="#{stat.tiendas}">Tiendas</span></div>
+        <div class="hero-stat"><b th:attr="data-count=${monedasDisponibles != null ? monedasDisponibles.size() : 1}"
+                                 th:text="${monedasDisponibles != null ? monedasDisponibles.size() : 1}">1</b><span th:text="#{stat.monedas}">Monedas</span></div>
+      </div>
+    </div>
+    <a class="scroll-cue" href="#todos" th:attr="aria-label=#{hero.irCatalogo}"></a>
+  </section>
+<!-- Ofertas recientes: juegos con bajada de precio en los últimos 14 días (marca ↓ % en la tarjeta) -->
+  <section class="section" id="ofertas" th:if="${juegosOferta != null and not #lists.isEmpty(juegosOferta)}">
+    <div class="section-header">
+      <h2><span class="cat-label oferta-label" th:text="#{dash.ofertasEtiqueta}">↓ OFERTA</span> <th:block th:text="#{dash.ofertas}">Ofertas recientes</th:block></h2>
+    </div>
+    <div class="cards">
+      <th:block th:each="juego : ${juegosOferta}">
+        <div th:replace="~{fragments/tarjeta :: juego(${juego})}"></div>
+      </th:block>
+    </div>
+  </section>
+  <!-- Catálogo paginado: th:each sobre juegos.content (objeto Page de Spring Data) -->
+  <section class="section" id="todos">
+    <div class="section-header">
+      <h2 th:text="#{dash.todosJuegos}">Todos los Juegos</h2>
+    </div>
+    <!-- Pestañas de género: th:href con parámetro genero en /buscar -->
+    <div class="cat-tabs">
+      <a class="cat-tab active" th:href="@{/dashboard}" th:text="#{tab.todos}">Todos</a>
+      <a class="cat-tab" th:href="@{/buscar(genero='Acción')}" th:text="#{genero.accion}">Acción</a>
+      <a class="cat-tab" th:href="@{/buscar(genero='RPG')}" th:text="#{genero.rpg}">RPG</a>
+      <a class="cat-tab" th:href="@{/buscar(genero='Shooter')}" th:text="#{genero.shooter}">Shooter</a>
+      <a class="cat-tab" th:href="@{/buscar(genero='Aventura')}" th:text="#{genero.aventura}">Aventura</a>
+      <a class="cat-tab" th:href="@{/buscar(genero='Estrategia')}" th:text="#{genero.estrategia}">Estrategia</a>
+    </div>
+    <div class="cards">
+      <!-- th:each="juego : ${juegos.content}" — itera la página actual del catálogo -->
+      <th:block th:each="juego : ${juegos.content}">
+        <div th:replace="~{fragments/tarjeta :: juego(${juego})}"></div>
+      </th:block>
+    </div>
+    <!-- Paginación Spring Data: totalPages, hasPrevious, hasNext, number -->
+    <div class="paginacion" th:if="${juegos.totalPages > 1}">
+      <a th:if="${juegos.hasPrevious()}" th:href="@{/dashboard(page=${juegos.number - 1})}" th:text="#{pag.anterior}">← Anterior</a>
+      <span th:text="#{pag.pagina(${juegos.number + 1}, ${juegos.totalPages})}"></span>
+      <a th:if="${juegos.hasNext()}" th:href="@{/dashboard(page=${juegos.number + 1})}" th:text="#{pag.siguiente}">Siguiente →</a>
+    </div>
+  </section>
+
+  <!-- Sección por género: th:if oculta la sección si la lista del modelo está vacía -->
+  <section class="section category-section" id="accion" th:if="${not #lists.isEmpty(juegosAccion)}">
+    <div class="section-header">
+      <h2><span class="cat-label accion-label" th:text="#{cat.accion}">ACCIÓN</span> <th:block th:text="#{dash.juegosAccion}">Juegos de Acción</th:block></h2>
+      <a th:href="@{/buscar(genero='Acción')}" class="ver-todos" th:text="#{dash.verTodos}">Ver todos →</a>
+    </div>
+    <div class="cards">
+      <th:block th:each="juego : ${juegosAccion}">
+        <div th:replace="~{fragments/tarjeta :: juego(${juego})}"></div>
+      </th:block>
+    </div>
+  </section>
+
+  <!-- Bloque RPG: misma estructura de tarjetas que Acción -->
+  <section class="section category-section" id="rpg" th:if="${not #lists.isEmpty(juegosRPG)}">
+    <div class="section-header">
+      <h2>      <span class="cat-label rpg-label" th:text="#{genero.rpg}">RPG</span> <th:block th:text="#{dash.juegosRol}">Juegos de Rol</th:block></h2>
+      <a th:href="@{/buscar(genero='RPG')}" class="ver-todos" th:text="#{dash.verTodos}">Ver todos →</a>
+    </div>
+    <div class="cards">
+      <th:block th:each="juego : ${juegosRPG}">
+        <div th:replace="~{fragments/tarjeta :: juego(${juego})}"></div>
+      </th:block>
+    </div>
+  </section>
+
+  <!-- Bloque Shooter -->
+  <section class="section category-section" id="shooter" th:if="${not #lists.isEmpty(juegosShooter)}">
+    <div class="section-header">
+      <h2><span class="cat-label shooter-label" th:text="#{genero.shooter}">SHOOTER</span> <th:block th:text="#{dash.juegosShooter}">Juegos de Disparos</th:block></h2>
+      <a th:href="@{/buscar(genero='Shooter')}" class="ver-todos" th:text="#{dash.verTodos}">Ver todos →</a>
+    </div>
+    <div class="cards">
+      <th:block th:each="juego : ${juegosShooter}">
+        <div th:replace="~{fragments/tarjeta :: juego(${juego})}"></div>
+      </th:block>
+    </div>
+  </section>
+
+  <!-- Pie de página -->
+  <footer class="footer">
+    <p>© 2026 — <span style="color:var(--primary)">PLAYGROUND</span> <th:block th:text="#{footer.derechos}">— Todos los derechos reservados</th:block></p>
+  </footer>
+    <div th:replace="~{fragments/moneda :: atribucion}"></div>
+</body>
+</html>

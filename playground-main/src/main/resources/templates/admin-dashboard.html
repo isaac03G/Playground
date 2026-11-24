@@ -1,0 +1,331 @@
+<!--
+  admin-dashboard.html — Panel administrativo (rol ADMIN)
+  Modelo: vista (usuarios|juegos), q, pagina, usuariosRegistrados / juegos, totalUsuarios, totalJuegos, masVendidos, mensaje, error.
+-->
+<!DOCTYPE html>
+<html lang="es" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+  <title th:text="#{admin.title}">Panel Admin — Playground</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <script th:src="@{/js/tema.js}"></script>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+  <nav class="navbar">
+    <a th:href="@{/}" style="text-decoration:none"><h1 class="logo"><span style="color:var(--primary)">PLAY</span>GROUND</h1></a>
+    <ul class="nav-links">
+      <li><a th:href="@{/dashboard}" th:text="#{admin.store}">Ver Tienda</a></li>
+    </ul>
+    <th:block th:replace="~{fragments/nav-acciones :: acciones}"></th:block>
+  </nav>
+
+  <div class="admin-wrap">
+    <h2 style="font-family:'Bebas Neue';font-size:2.5rem;margin-bottom:1.5rem" th:text="#{admin.panel}">Panel Administrativo</h2>
+
+    <div class="alerta ok" th:if="${mensaje}" th:text="${@traductor.traducir(mensaje)}"></div>
+    <div class="alerta err" th:if="${error}" th:text="${@traductor.traducir(error)}"></div>
+
+    <!-- Tarjetas: al pulsar una se elige qué lista se muestra debajo (?vista=usuarios | juegos) -->
+    <div class="stats-grid">
+      <a class="stat-card stat-link" th:classappend="${vista == 'usuarios'} ? 'activa'"
+         th:href="@{/admin(vista='usuarios')}">
+        <div class="stat-label" th:text="#{admin.users}">👤 Usuarios</div>
+        <div class="stat-valor" th:text="${totalUsuarios}">0</div>
+      </a>
+      <a class="stat-card stat-link" th:classappend="${vista == 'juegos'} ? 'activa'"
+         th:href="@{/admin(vista='juegos')}">
+        <div class="stat-label" th:text="#{admin.games}">🎮 Juegos</div>
+        <div class="stat-valor" th:text="${totalJuegos}">0</div>
+      </a>
+    </div>
+
+    <!-- Lista según la tarjeta elegida: buscador propio (NO es el del scraper) + tabla + paginación -->
+    <section id="lista-admin" style="margin:0 0 2.5rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem">
+        <div class="section-title" th:if="${vista == 'juegos'}" th:text="#{admin.manageGames}">Gestión de Juegos</div>
+        <div class="section-title" th:if="${vista == 'usuarios'}" th:text="#{admin.manageUsers}">Usuarios registrados y sus wishlist</div>
+        <a th:if="${vista == 'juegos'}" th:href="@{/admin/juego/nuevo}" class="btn small" th:text="#{admin.newGame}">+ Nuevo Juego</a>
+      </div>
+      <p th:if="${vista == 'usuarios'}" style="color:var(--muted);margin:-.5rem 0 1rem" th:text="#{admin.usersHint}">
+        Consulta los datos de contacto y los juegos que le interesan a cada usuario.
+      </p>
+
+      <!-- Buscador de la lista: GET /admin?vista=...&q=...&page=... -->
+      <form class="admin-filtro" th:action="@{/admin}" method="get"
+            th:with="clave=${vista == 'usuarios' ? (pagina.totalElements == 1 ? 'admin.userCountOne' : 'admin.userCount') : (pagina.totalElements == 1 ? 'admin.gameCountOne' : 'admin.gameCount')}">
+        <input type="hidden" name="vista" th:value="${vista}">
+        <input type="search" name="q" th:value="${q}" autocomplete="off"
+               th:placeholder="${vista == 'usuarios'} ? #{admin.searchUsers} : #{admin.searchByName}">
+        <button type="submit" class="btn small" th:text="#{f.buscar}">Buscar</button>
+        <a th:if="${q != null and !q.isEmpty()}" th:href="@{/admin(vista=${vista})}" class="btn-edit" th:text="#{admin.clear}">Limpiar</a>
+        <span class="admin-filtro-info" th:text="${#messages.msg(clave, pagina.totalElements)}">0</span>
+      </form>
+
+      <!-- ===== Vista USUARIOS ===== -->
+      <div th:if="${vista == 'usuarios'}" style="background:var(--surface);border:1px solid var(--line);overflow-x:auto">
+        <table class="admin-table" style="min-width:650px">
+          <thead>
+            <tr>
+              <th th:text="#{admin.user}">Usuario</th>
+              <th th:text="#{admin.contact}">Contacto</th>
+              <th th:text="#{admin.wishlistGames}">Juegos en wishlist</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${usuariosRegistrados.isEmpty()}">
+              <td colspan="3" style="text-align:center;color:var(--muted);padding:1.5rem">
+                <th:block th:text="#{admin.noUsers}">No se encontraron usuarios</th:block><span th:if="${q != null and !q.isEmpty()}" th:text="${' ' + #messages.msg('admin.forQuery', q)}"></span>.
+              </td>
+            </tr>
+            <tr th:each="registro : ${usuariosRegistrados}">
+              <td style="vertical-align:top">
+                <strong th:text="${registro.usuario.username}">usuario</strong>
+              </td>
+              <td style="vertical-align:top">
+                <div th:if="${registro.usuario.email != null}">
+                  <a th:href="'mailto:' + ${registro.usuario.email}" th:text="${registro.usuario.email}">correo</a>
+                </div>
+                <div th:if="${registro.usuario.telefono != null}">
+                  <a th:href="'tel:' + ${registro.usuario.telefono}" th:text="${registro.usuario.telefono}">teléfono</a>
+                </div>
+                <span th:if="${registro.usuario.email == null and registro.usuario.telefono == null}" style="color:var(--muted)" th:text="#{admin.noContact}">Sin contacto registrado</span>
+              </td>
+              <td style="vertical-align:top">
+                <span th:if="${registro.juegosWishlist == null or registro.juegosWishlist.isEmpty()}" style="color:var(--muted)" th:text="#{admin.emptyWishlist}">Wishlist vacía</span>
+                <ul th:if="${registro.juegosWishlist != null and !registro.juegosWishlist.isEmpty()}" style="margin:0;padding-left:1.2rem">
+                  <li th:each="juego : ${registro.juegosWishlist}" th:text="${juego.nombre}">Juego</li>
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ===== Vista JUEGOS (CRUD: editar y eliminar por fila) ===== -->
+      <div th:if="${vista == 'juegos'}" style="background:var(--surface);border:1px solid var(--line);overflow-x:auto">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th th:text="#{admin.name}">Nombre</th>
+              <th th:text="#{f.genero}">Género</th>
+              <th th:text="#{admin.availableStores}">Tiendas disponibles</th>
+              <th th:text="#{admin.minimumPrice}">Precio mínimo</th>
+              <th th:text="#{admin.actions}">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${juegos.isEmpty()}">
+              <td colspan="5" style="text-align:center;color:var(--muted);padding:1.5rem">
+                <th:block th:text="#{admin.noGames}">No se encontraron juegos</th:block><span th:if="${q != null and !q.isEmpty()}" th:text="${' ' + #messages.msg('admin.forQuery', q)}"></span>.
+              </td>
+            </tr>
+            <!-- th:each recorre los juegos de la página actual -->
+            <tr th:each="juego : ${juegos}">
+              <td th:text="${juego.nombre}">Juego</td>
+              <td th:text="${juego.genero != null ? @mensajes.genero(juego.genero) : '—'}">—</td>
+              <td>
+                <span th:if="${juego.precios != null}"
+                      th:each="item : ${juego.precios}"
+                      class="plat-tag-sm" th:text="${item.plataforma}">Steam</span>
+                <span th:if="${juego.precios == null or juego.precios.isEmpty()}"
+                      style="color:var(--line-3);font-size:0.8rem" th:text="#{admin.noStores}">Sin tiendas</span>
+              </td>
+              <td>
+                <span class="precio-min"
+                      th:text="${juego.precioMinimo > 0 ? @monedas.formatear(juego.precioMinimo, monedaActual) : '—'}">—</span>
+                <span th:if="${juego.plataformaMinima != null}"
+                      style="font-size:0.75rem;color:var(--muted)"
+                      th:text="${' ' + #messages.msg('admin.atStore', juego.plataformaMinima)}"></span>
+              </td>
+              <td>
+                <div class="acciones">
+                  <a th:href="@{/admin/juego/{id}/editar(id=${juego.juegoId})}" class="btn-edit" th:text="#{admin.edit}">Editar</a>
+                  <!-- POST eliminar; confirm() en el botón evita borrado accidental -->
+                  <form th:action="@{/admin/juego/{id}/eliminar(id=${juego.juegoId})}" method="post">
+                    <button type="submit" class="btn-danger" th:attr="data-confirm=#{admin.deleteConfirm}" onclick="return confirm(this.dataset.confirm)" th:text="#{admin.delete}">Eliminar</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación (sirve para ambas vistas): conserva vista y búsqueda al cambiar de página -->
+      <div class="paginacion" th:if="${pagina.totalPages > 1}">
+        <a th:if="${pagina.hasPrevious()}" th:href="@{/admin(vista=${vista},q=${q},page=0)}" th:text="#{pag.primera}">« Primera</a>
+        <a th:if="${pagina.hasPrevious()}" th:href="@{/admin(vista=${vista},q=${q},page=${pagina.number - 1})}" th:text="#{pag.anterior}">← Anterior</a>
+        <span th:text="#{pag.pagina(${pagina.number + 1}, ${pagina.totalPages})}"></span>
+        <a th:if="${pagina.hasNext()}" th:href="@{/admin(vista=${vista},q=${q},page=${pagina.number + 1})}" th:text="#{pag.siguiente}">Siguiente →</a>
+        <a th:if="${pagina.hasNext()}" th:href="@{/admin(vista=${vista},q=${q},page=${pagina.totalPages - 1})}" th:text="#{pag.ultima}">Última »</a>
+      </div>
+      <p class="admin-filtro-info" style="text-align:center;margin-top:.5rem" th:if="${pagina.totalElements > 0}"
+         th:text="#{admin.showing(${pagina.number * pagina.size + 1}, ${pagina.number * pagina.size + pagina.numberOfElements}, ${pagina.totalElements})}"></p>
+    </section>
+
+    <!-- Ranking de juegos más vistos/vendidos; th:each sobre masVendidos -->
+    <div class="top-juegos" th:if="${masVendidos != null and !masVendidos.isEmpty()}">
+      <h3 style="font-family:'Bebas Neue';font-size:1.3rem;margin-bottom:1rem;color:var(--muted)" th:text="#{admin.topGames}">🏆 JUEGOS MÁS VISTOS / VENDIDOS</h3>
+      <div th:each="item : ${masVendidos}" class="top-juego-item">
+        <span style="font-weight:600;min-width:200px" th:text="${item.nombre}">Juego</span>
+        <div class="bar-bg">
+          <div class="bar-fill" th:style="'width:' + (${item.ventas} * 20) + 'px'"></div>
+        </div>
+        <span style="color:var(--primary);font-family:'Bebas Neue';font-size:1.2rem" th:text="#{admin.sales(${item.ventas})}">0 ventas</span>
+      </div>
+    </div>
+
+    <!-- Actualizador de precios: el servidor ejecuta playground-scraper/actualizador.py y muestra su registro -->
+    <div class="section-title" id="actualizador" th:text="#{admin.updatePrices}">Actualizar precios</div>
+    <div style="background:var(--surface);border:1px solid var(--line);padding:1.2rem;margin-bottom:2rem"
+         id="actPanel" th:attr="data-url=@{/admin/actualizador/estado},data-status-idle=#{admin.status.idle},data-status-running=#{admin.status.running},data-status-done=#{admin.status.done},data-status-error=#{admin.status.error},data-status-stopped=#{admin.status.stopped},data-status-offline=#{admin.status.offline},data-time-start=#{admin.timeStart},data-time-end=#{admin.timeEnd},data-mode-full=#{admin.mode.full},data-mode-prices=#{admin.mode.prices},data-mode-all=#{admin.mode.all},data-mode-discover=#{admin.mode.discover},data-mode-simulate=#{admin.mode.simulate},data-mode-status=#{admin.mode.status}">
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center">
+        <form th:action="@{/admin/actualizador/iniciar}" method="post" style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center">
+          <select name="modo" style="padding:.5rem;background:var(--surface-alt);color:var(--text);border:1px solid var(--line)">
+            <option value="precios" th:text="#{admin.mode.prices}">Revisar precios (detecta bajadas y subidas)</option>
+            <option value="todos" th:text="#{admin.mode.all}">Revisar TODOS los juegos (puede tardar mucho)</option>
+            <option value="completa" th:text="#{admin.mode.full}">Pasada completa (tasas + precios + juegos nuevos)</option>
+            <option value="descubrir" th:text="#{admin.mode.discover}">Solo descubrir juegos nuevos</option>
+            <option value="simular" th:text="#{admin.mode.simulate}">Simulación (no escribe en la base de datos)</option>
+            <option value="estado" th:text="#{admin.mode.status}">Ver estado del catálogo y últimos cambios</option>
+          </select>
+          <button type="submit" id="btnActualizar" class="btn small" th:text="#{admin.run}">▶ Ejecutar</button>
+        </form>
+        <form th:action="@{/admin/actualizador/detener}" method="post">
+          <button type="submit" id="btnDetener" class="btn small btn-outline" disabled th:text="#{admin.stop}">⏹ Detener</button>
+        </form>
+        <b id="actEstado" style="margin-left:.5rem" th:text="#{admin.status.idle}">Sin ejecutar</b>
+        <span id="actTiempos" style="color:var(--muted);font-size:.85rem"></span>
+      </div>
+      <pre id="actLog" style="background:#05050a;color:#cfd8dc;font:12px/1.5 Consolas,monospace;padding:.8rem;margin:1rem 0 0;max-height:340px;overflow:auto;white-space:pre-wrap" th:text="#{admin.noLog}">Sin registros todavía.</pre>
+      <p style="margin:.6rem 0 0;color:var(--muted);font-size:.85rem">
+        <th:block th:text="#{admin.updateWarning}">Una pasada puede tardar varios minutos. El registro se conserva mientras la app esté encendida.</th:block>
+      </p>
+    </div>
+    <script>
+      (function () {
+        var panel = document.getElementById('actPanel');
+        var log = document.getElementById('actLog');
+        var est = document.getElementById('actEstado');
+        var tiempos = document.getElementById('actTiempos');
+        var btnRun = document.getElementById('btnActualizar');
+        var btnStop = document.getElementById('btnDetener');
+        var url = panel.getAttribute('data-url');
+        var desde = 0, primero = true;
+        var ETQ = {inactivo: panel.dataset.statusIdle, ejecutando: panel.dataset.statusRunning, terminado: panel.dataset.statusDone,
+                   error: panel.dataset.statusError, detenido: panel.dataset.statusStopped};
+        var MODOS = {completa: panel.dataset.modeFull, precios: panel.dataset.modePrices, todos: panel.dataset.modeAll,
+                     descubrir: panel.dataset.modeDiscover, simular: panel.dataset.modeSimulate, estado: panel.dataset.modeStatus};
+        function tick() {
+          fetch(url + '?desde=' + desde, {headers: {'Accept': 'application/json'}, credentials: 'same-origin'})
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+              if (desde > d.siguiente) { log.textContent = ''; desde = 0; primero = false; return tick(); }
+              if (d.lineas.length > 0) {
+                if (primero) { log.textContent = ''; primero = false; }
+                var pegado = log.scrollTop + log.clientHeight >= log.scrollHeight - 25;
+                log.textContent += d.lineas.join('\n') + '\n';
+                if (pegado) { log.scrollTop = log.scrollHeight; }
+              }
+              desde = d.siguiente;
+              est.textContent = (ETQ[d.estado] || d.estado) + (MODOS[d.modo] ? ' — ' + MODOS[d.modo] : '');
+              tiempos.textContent = d.inicio ? (panel.dataset.timeStart + ': ' + d.inicio + (d.fin ? ' · ' + panel.dataset.timeEnd + ': ' + d.fin : '')) : '';
+              var corriendo = d.estado === 'ejecutando';
+              btnRun.disabled = corriendo;
+              btnStop.disabled = !corriendo;
+              setTimeout(tick, corriendo ? 1500 : 6000);
+            })
+            .catch(function () { est.textContent = panel.dataset.statusOffline; setTimeout(tick, 6000); });
+        }
+        tick();
+      })();
+    </script>
+
+    <!-- Buscador automático: el servidor ejecuta playground-scraper/buscar_json.py (Steam, GOG y Epic) -->
+    <div class="section-title" th:text="#{admin.searchStores}">Buscar juego en las tiendas</div>
+    <div style="background:var(--surface);border:1px solid var(--line);padding:1.2rem;margin-bottom:2rem">
+      <form th:action="@{/admin/buscar-juego}" method="post" id="formBuscar"
+            style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center">
+        <input type="text" name="nombre" required minlength="2" maxlength="100"
+               th:placeholder="#{admin.gamePlaceholder}" placeholder="Nombre del juego, p. ej. witcher 3"
+               th:value="${resultadoBusqueda != null ? resultadoBusqueda.consulta : ''}"
+               style="flex:1;min-width:240px;padding:.7rem;background:#0a0a0f;color:var(--text);border:1px solid var(--line-2)">
+        <button type="submit" name="accion" value="guardar" class="btn small" th:text="#{admin.searchSave}">🔎 Buscar y guardar</button>
+        <button type="submit" name="accion" value="probar" class="btn small btn-outline" th:text="#{admin.testOnly}">Solo probar</button>
+      </form>
+      <p id="buscando" style="display:none;margin:.8rem 0 0;color:var(--primary)">
+        <th:block th:text="#{admin.searching}">⏳ Buscando en Steam, GOG y Epic Games… puede tardar hasta un minuto, no cierres la página.</th:block>
+        <span class="loader-bar"></span>
+      </p>
+
+      <div th:if="${resultadoBusqueda != null}" style="margin-top:1.2rem">
+        <p th:if="${resultadoBusqueda.encontrado}" style="margin:0 0 .4rem;font-weight:700">
+          ✅ <span th:text="${resultadoBusqueda.nombre}">Juego</span>
+          <span th:if="${resultadoBusqueda.genero != null}" style="color:var(--muted);font-weight:400"
+                th:text="'· ' + ${@mensajes.genero(resultadoBusqueda.genero)}"></span>
+        </p>
+        <p th:unless="${resultadoBusqueda.encontrado}" style="margin:0 0 .4rem;font-weight:700">
+          <th:block th:text="#{admin.notFound}">❌ No se encontró</th:block> “<span th:text="${resultadoBusqueda.consulta}">juego</span>” <th:block th:text="#{admin.inAnyStore}">en ninguna tienda.</th:block>
+        </p>
+
+        <p style="margin:0 0 .8rem;color:var(--muted)" th:switch="${resultadoBusqueda.guardado}">
+          <span th:case="'insertado'" th:text="#{admin.savedNew}">💾 Guardado como juego nuevo en el catálogo.</span>
+          <span th:case="'actualizado'" th:text="#{admin.updated}">💾 Ya existía: se actualizaron sus precios.</span>
+          <span th:case="'sin_precio'" th:text="#{admin.noPrice}">⚠️ No se guardó: ninguna tienda muestra precio.</span>
+          <span th:case="*" th:text="${resultadoBusqueda.solicitoGuardar} ? #{admin.notSaved} : #{admin.previewNotSaved}"></span>
+        </p>
+
+        <div style="overflow-x:auto">
+          <table class="admin-table">
+            <thead>
+              <tr><th th:text="#{admin.store}">Tienda</th><th th:text="#{admin.result}">Resultado</th><th th:text="#{admin.storeName}">Nombre en la tienda</th><th th:text="#{admin.price}">Precio</th></tr>
+            </thead>
+            <tbody>
+              <tr th:each="t : ${resultadoBusqueda.tiendas}">
+                <td th:text="${t.tienda}">Steam</td>
+                <td th:switch="${t.estado}">
+                  <span th:case="'encontrado'" style="color:#4caf50" th:text="#{admin.found}">✅ Encontrado</span>
+                  <span th:case="'sin_precio'" style="color:#ffb300" th:text="#{admin.presentNoPrice}">➖ Está, sin precio</span>
+                  <span th:case="'no_encontrado'" style="color:#ef5350" th:text="#{admin.missing}">❌ No lo tiene</span>
+                  <span th:case="*" style="color:#ffb300" th:title="${@traductor.traducir(t.detalle)}" th:text="#{admin.noResponse}">⚠️ No respondió</span>
+                </td>
+                <td th:text="${t.nombre != null ? t.nombre : '—'}">—</td>
+                  <td>
+    <span th:text="${t.precioTexto}">—</span>
+    <span th:if="${t.precioOriginalTexto != null}" style="color:var(--muted);font-size:.8rem"
+          th:text="#{admin.storePrice(${t.precioOriginalTexto})}"></span>
+  </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin:.6rem 0 0;color:var(--muted);font-size:.85rem"
+           th:if="${#lists.contains(resultadoBusqueda.tiendas.![estado], 'error')}">
+          <th:block th:text="#{admin.noResponseHelp}">“No respondió” significa que la tienda falló (bloqueo, caída o cambio en su API), no que no tenga el juego. El detalle está en la consola de la app.</th:block>
+        </p>
+      </div>
+    </div>
+    <script>
+      document.getElementById('formBuscar').addEventListener('submit', function () {
+        document.getElementById('buscando').style.display = 'block';
+        // No se usa "disabled": quitaría el valor de 'accion' del envío.
+        this.querySelectorAll('button').forEach(function (b) { b.style.opacity = '.5'; b.style.pointerEvents = 'none'; });
+      });
+    </script>
+  </div>
+
+  <!-- Al elegir tarjeta, buscar o cambiar de página, vuelve directo a la lista -->
+  <script>
+    if (/[?&](vista|page|q)=/.test(location.search)) {
+      var t = document.getElementById('lista-admin');
+      if (t) t.scrollIntoView();
+    }
+  </script>
+
+  <footer class="footer"><p>© 2026 — <span style="color:var(--primary)">PLAYGROUND</span></p></footer>
+</body>
+</html>

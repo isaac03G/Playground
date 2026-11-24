@@ -1,0 +1,32 @@
+<!--
+  fragments/moneda.html — Selector de moneda y nota de atribución de las tasas.
+  Uso:  <div th:replace="~{fragments/moneda :: selector}"></div>      (dentro del <nav>)
+        <div th:replace="~{fragments/moneda :: atribucion}"></div>    (antes de </body>)
+  Datos: monedaActual y monedasDisponibles los pone MonedaAdvice en todas las vistas.
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+  <!-- Se oculta solo si todavía no hay tasas guardadas (únicamente COP) -->
+  <div th:fragment="selector" th:if="${monedasDisponibles != null and monedasDisponibles.size() > 1}"
+       style="display:flex;align-items:center;margin:0">
+    <select th:title="#{moneda.ayuda}"
+            th:attr="data-url=@{/moneda},aria-label=#{moneda.etiqueta}"
+            onchange="location.href=this.dataset.url+'?codigo='+encodeURIComponent(this.value)+'&amp;volver='+encodeURIComponent(location.pathname+location.search)"
+            style="background:var(--surface);color:var(--muted);border:1px solid var(--line-2);border-radius:6px;padding:.35rem .5rem;font:inherit;cursor:pointer">
+      <option th:each="m : ${monedasDisponibles}" th:value="${m}" th:text="${m}"
+              th:selected="${m == monedaActual}">COP</option>
+    </select>
+  </div>
+
+  <!-- ExchangeRate-API exige mostrar este enlace cuando se usan sus tasas -->
+  <p th:fragment="atribucion"
+     th:if="${monedaActual != null and monedaActual != 'COP' and @monedas.atribucion() != null}"
+     style="text-align:center;color:var(--muted);font-size:.75rem;margin:1.5rem 0">
+    <th:block th:text="#{moneda.nota}">Los precios base están en COP; la conversión es solo referencial.</th:block>
+    <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener" style="color:inherit">Rates By Exchange Rate API</a>
+  </p>
+
+</body>
+</html>
